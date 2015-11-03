@@ -1,0 +1,40 @@
+<div class="modal-header">
+	<h4 id="modal-title"><i class="fa fa-calendar-plus-o"></i>&nbsp;&nbsp;{{modalTitle}}</h4>
+</div>
+<div class="modal-body1">
+	<form>
+		<label>Title</label>
+		<input class="form-control" ng-model="newevent.title" ng-focus="isFocused" type="text" style="width: 505px;">
+				
+		<div>
+		    <div class="col-md-6 shiftLeft">
+		       <label>Start</label>
+		       <p class="input-group">
+		         <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="newevent.start" is-open="dateStatusStart.opened" min-date="minDate" max-date="maxDate" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+		         <span class="input-group-btn">
+		           <button type="button" class="btn btn-primary calendarButton" ng-click="openStart($event)"><i class="fa fa-calendar fa-lg"></i></button>
+		         </span>
+		       </p>
+		       <uib-timepicker ng-model="newevent.starttime" hour-step="hstep" minute-step="mstep" show-meridian="ismeridian" style="margin-top: -10px;"></uib-timepicker>
+		    </div>
+		    <div class="col-md-6 shiftLeft">
+		       <label>End</label>
+		       <p class="input-group">
+		         <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="newevent.end" is-open="dateStatusEnd.opened" min-date="minDate" max-date="maxDate" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+		         <span class="input-group-btn">
+		           <button type="button" class="btn btn-primary calendarButton" ng-click="openEnd($event)"><i class="fa fa-calendar fa-lg"></i></button>
+		         </span>
+		       </p>
+		       <uib-timepicker ng-model="newevent.endtime" hour-step="hstep" minute-step="mstep" show-meridian="ismeridian" style="margin-top: -10px;"></uib-timepicker>
+		    </div>
+		</div>
+		
+		
+				
+	    <input ng-model="newevent.id" type="hidden">
+	</form>
+</div>
+<div class="modal-footer">
+	<button class="btn btn-success" ng-click="save(newevent)">Save</button>
+	<button class="btn" ng-click="closeEditor()">Cancel</button>
+</div>
