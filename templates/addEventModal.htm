@@ -10,7 +10,7 @@
 		    <div class="col-md-6 shiftLeft">
 		       <label>Start</label>
 		       <p class="input-group">
-		         <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="newevent.start" is-open="dateStatusStart.opened" min-date="minDate" max-date="maxDate" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+		         <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="newevent.start" is-open="dateStatusStart.opened" min-date="minDate" max-date="maxDate" datepicker-options="dateOptions" ng-required="true" close-text="Close" ng-blur="newevent.end = newevent.start"/>
 		         <span class="input-group-btn">
 		           <button type="button" class="btn btn-primary calendarButton" ng-click="openStart($event)"><i class="fa fa-calendar fa-lg"></i></button>
 		         </span>

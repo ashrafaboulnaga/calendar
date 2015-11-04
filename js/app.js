@@ -659,23 +659,7 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
 		         
     	return rdf;
     };
-        
-    $scope.changeTo = 'Hungarian';
-    /* event source that pulls from google.com */
-    $scope.eventSource = {
-            url: "http://www.google.com/calendar/feeds/usa__en%40holiday.calendar.google.com/public/basic",
-            className: 'gcal-event',           // an option!
-            currentTimezone: 'America/Chicago' // an option!
-    };
-    /* event source that contains custom events on the scope */
-//    $scope.events = [
-//      {title: 'All Day Event',start: new Date(y, m, 1)},
-//      {title: 'Long Event',start: new Date(y, m, d - 5),end: new Date(y, m, d - 2)},
-//      {id: 999,title: 'Repeating Event',start: new Date(y, m, d - 3, 16, 0),allDay: false},
-//      {id: 999,title: 'Repeating Event',start: new Date(y, m, d + 4, 16, 0),allDay: false},
-//      {title: 'Birthday Party',start: new Date(y, m, d + 1, 19, 0),end: new Date(y, m, d + 1, 22, 30),allDay: false},
-//      {title: 'Click for Google',start: new Date(y, m, 28),end: new Date(y, m, 29),url: 'http://google.com/'}
-//    ];
+                
     /* event source that calls a function on every view switch */
     $scope.eventsF = function (start, end, timezone, callback) {
       var s = new Date(start).getTime() / 1000;
@@ -694,10 +678,12 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
           {type:'party',title: 'Click for Google',start: new Date(y, m, 28),end: new Date(y, m, 29),url: 'http://google.com/'}
         ]
     };
+    
     /* alert on eventClick */
     $scope.alertOnEventClick = function(date, jsEvent, view){
         //$scope.alertMessage = (date.title + ' was clicked ');
     };
+    
     /* alert on Drop */
      $scope.alertOnDrop = function(event, delta, revertFunc, jsEvent, ui, view){
     	 var currentEvent = $scope.getEvent(event.id);
@@ -709,42 +695,28 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
     	 
     	 $scope.insertEvent(currentEvent, UPDATE);
     	 
-    	 $scope.alertMessage = ('Event \'' + event.title + '\' moved ' + diffDays + ' days');
+    	 $scope.alertMessage = ('Event \'' + currentEvent.title + '\' moved ' + diffDays + ' days');
     };
+    
     /* alert on Resize */
     $scope.alertOnResize = function(event, delta, revertFunc, jsEvent, ui, view ){
-       $scope.alertMessage = ('Event Resized to make dayDelta ' + delta);
+    	 var currentEvent = $scope.getEvent(event.id);
+	   	 var start = currentEvent.start;
+	   	 var end = currentEvent.end;
+	   	 var diffMinutes = delta/1000/60;
+	   	 //currentEvent.start = start.AddMinutes(diffMinutes);
+	   	 currentEvent.end = end.AddMinutes(diffMinutes);
+   	 
+	   	 $scope.insertEvent(currentEvent, UPDATE);
+	   	 
+	   	 $scope.alertMessage = ('Event \'' + currentEvent.title + '\' resized ' + diffMinutes + ' minutes');
     };
-    /* add and removes an event source of choice */
-    $scope.addRemoveEventSource = function(sources,source) {
-      var canAdd = 0;
-      angular.forEach(sources,function(value, key){
-        if(sources[key] === source){
-          sources.splice(key,1);
-          canAdd = 1;
-        }
-      });
-      if(canAdd === 0){
-        sources.push(source);
-      }
-    };
-    /* add custom event*/
-    $scope.addEvent = function() {
-      $scope.events.push({
-        title: 'New event',
-        start: new Date(y, m, 28),
-        end: new Date(y, m, 29),
-        className: ['newEvent']
-      });
-    };
-    /* remove event */
-//    $scope.remove = function(index) {
-//      $scope.events.splice(index,1);
-//    };
+    
     /* Change View */
     $scope.changeView = function(view,calendar) {
       uiCalendarConfig.calendars[calendar].fullCalendar('changeView',view);
     };
+    
     /* Change View */
     $scope.renderCalender = function(calendar) {
       $timeout(function() {
@@ -753,12 +725,14 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
         }
       });
     };
+    
      /* Render Tooltip */
     $scope.eventRender = function( event, element, view ) {
         element.attr({'tooltip': event.title,
                       'tooltip-append-to-body': true});
         $compile(element)($scope);
     };
+    
     /* config object */
     $scope.uiConfig = {
       calendar:{
@@ -775,21 +749,10 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
         eventRender: $scope.eventRender
       }
     };
-
-    $scope.changeLang = function() {
-      if($scope.changeTo === 'Hungarian'){
-        $scope.uiConfig.calendar.dayNames = ["Vasárnap", "Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat"];
-        $scope.uiConfig.calendar.dayNamesShort = ["Vas", "Hét", "Kedd", "Sze", "Csüt", "Pén", "Szo"];
-        $scope.changeTo= 'English';
-      } else {
-        $scope.uiConfig.calendar.dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        $scope.uiConfig.calendar.dayNamesShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        $scope.changeTo = 'Hungarian';
-      }
-    };
+   
     /* event sources array*/
-    $scope.eventSources = [$scope.events];
-    $scope.eventSources2 = [$scope.events];
+    $scope.eventSources = [$scope.events, $scope.eventsF];
+    $scope.eventSources2 = [$scope.calEventsExt, $scope.eventsF, $scope.events];
     
     //Builds a customized timestamp date
     function buildDate(date){
@@ -824,9 +787,15 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
     	return sDate;
     }
     
-    //Adds or subtracts date
+    //Adds or subtracts date by days
     Date.prototype.AddDays = function(nDays) {
         this.setTime(this.getTime() + (nDays * (1000 * 60 * 60 * 24)));
+        return this;
+    }
+    
+    //Adds or subtracts date by minutes
+    Date.prototype.AddMinutes = function(nMinutes) {
+        this.setTime(this.getTime() + (nMinutes * (1000 * 60)));
         return this;
     }
     
