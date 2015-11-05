@@ -69,6 +69,7 @@
 	                    
 	                    <div class="span4">                    
 	                        <ul class="unstyled">
+	                            <!-- loop events -->
 	                            <li ng-repeat="e in events">
 	                                <div class="alert alert-info" ng-show="e.start.getDate() == e.end.getDate()">
 	                                    <input ng-model="e.id" type="hidden">
@@ -100,6 +101,19 @@
 	                          <h4>{{alertMessage}}</h4>
 	                       </div>
 	                    </div>
+	                    <!--  
+	                    <div style="margin-top:50px">
+                            <div style="float: left;margin-right: 3px;">
+                            	Legend:   
+                            </div>
+                            <div class="legend2">
+                            	Calendar event   
+                            </div>
+                        	<div class="legend1">
+                            	Scheduler event
+                            </div>
+	                    </div>
+	                    -->
 	                </div>
 	            </div>
 	        </section>

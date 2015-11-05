@@ -149,8 +149,32 @@ p.big-title {
     font-size: 32px;
     color: #3a87ad;
 }
-.noteTitle{
+.noteTitle {
 	margin-top: 15px;
 	font-size: 12px;
 	color: #ea2839;
+}
+.legend1 {
+	width: 12%;
+    padding-left: 5px;
+    color: yellow;
+    background-color: #f00;
+    border: 1px solid yellow;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    float: left;
+}
+.legend2 {
+	margin-bottom: 3px;
+	margin-right: 3px;
+    width: 12%;
+    padding-left: 5px;
+    color: #3a87ad;
+    background-color: #d9edf7;
+    border: 1px solid #3a87ad;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    float: left;
 }

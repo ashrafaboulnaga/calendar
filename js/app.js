@@ -24,6 +24,7 @@ calendarDemoApp.directive('ngFocus', function($timeout) {
 
 calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, $http, $sce, uiCalendarConfig) {
 	$scope.events = [];
+	$scope.sevents = [];
 	$scope.loggedin = false;
 	$scope.storageExists = false;
     $scope.userProfile = {};
@@ -405,12 +406,13 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
                 }
 			}
 			//fetch user events
-			$scope.load($scope.userProfile.calendarStorage);
+			$scope.loadEvent($scope.userProfile.calendarStorage);
+			$scope.loadSchedules($scope.userProfile.calendarStorage);
 	    });
     };
     
     // Lists events resources
-    $scope.load = function (uri) {
+    $scope.loadEvent = function (uri) {
 		var g = $rdf.graph();
 		var f = $rdf.fetcher(g);
 	    f.nowOrWhenFetched(uri + '*',undefined,function() {
@@ -438,7 +440,7 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
 					
 					var webid = g.anyStatementMatching(evs[e]['subject'], MAKER('maker'))['object']['value'];
 															
-					var event = {
+					var sevent = {
 					    id: sId[1],
 					    title: title,
 					    start: start,
@@ -446,7 +448,47 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
 						webid: webid
 					}
 										
-					$scope.events.push(event);
+					$scope.events.push(sevent);
+                    $scope.$apply();
+                }
+			}
+	    });  
+    };
+    
+ // Lists schedulable events resources
+    $scope.loadSchedules = function (uri) {
+		var g = $rdf.graph();
+		var f = $rdf.fetcher(g);
+	    f.nowOrWhenFetched(uri + '*',undefined,function() {
+	    	var RDF = $rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+		    var TITLE = $rdf.Namespace('http://purl.org/dc/elements/1.1/');
+			var CREATED = $rdf.Namespace('http://purl.org/dc/elements/1.1/');
+			var SEVENT = $rdf.Namespace('http://www.w3.org/ns/pim/schedule#');
+			var AUTHOR = $rdf.Namespace('http://purl.org/dc/elements/1.1/');
+			
+			var evs = g.statementsMatching(undefined, RDF('type'), SEVENT('SchedulableEvent'));
+			if (evs != undefined) {
+				for (var e in evs) {
+					var id = evs[e]['subject']['value']; 
+					var sId = id.split("/");
+					
+					var title = g.anyStatementMatching(evs[e]['subject'], TITLE('title'))['object']['value'];
+					
+					var sStart = g.anyStatementMatching(evs[e]['subject'], CREATED('created'))['object']['value'];
+					var start = new Date(sStart);
+					var end = new Date(sStart);
+					
+					var webid = g.anyStatementMatching(evs[e]['subject'], AUTHOR('author'))['object']['value'];
+																				
+					var sEvent = {
+					    id: sId[sId.length-1],
+					    title: title,
+					    start: start,
+					    end: end,
+						webid: webid
+					}
+										
+					$scope.sEvents.events.push(sEvent);
                     $scope.$apply();
                 }
 			}
@@ -669,13 +711,13 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
       callback(events);
     };
 
-    $scope.calEventsExt = {
+    $scope.sEvents = {
        color: '#f00',
        textColor: 'yellow',
        events: [
-          {type:'party',title: 'Lunch',start: new Date(y, m, d, 12, 0),end: new Date(y, m, d, 14, 0),allDay: false},
-          {type:'party',title: 'Lunch 2',start: new Date(y, m, d, 12, 0),end: new Date(y, m, d, 14, 0),allDay: false},
-          {type:'party',title: 'Click for Google',start: new Date(y, m, 28),end: new Date(y, m, 29),url: 'http://google.com/'}
+          //{type:'party',title: 'Lunch',start: new Date(y, m, d, 12, 0),end: new Date(y, m, d, 14, 0),allDay: false},
+          //{type:'party',title: 'Lunch 2',start: new Date(y, m, d, 12, 0),end: new Date(y, m, d, 14, 0),allDay: false},
+          //{type:'party',title: 'Click for Google',start: new Date(y, m, 28),end: new Date(y, m, 29),url: 'http://google.com/'}
         ]
     };
     
@@ -751,8 +793,8 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
     };
    
     /* event sources array*/
-    $scope.eventSources = [$scope.events, $scope.eventsF];
-    $scope.eventSources2 = [$scope.calEventsExt, $scope.eventsF, $scope.events];
+    $scope.eventSources = [$scope.events, $scope.eventsF, $scope.sEvents];
+    //$scope.eventSources2 = [$scope.sEvents, $scope.eventsF, $scope.events, $scope.sevents];
     
     //Builds a customized timestamp date
     function buildDate(date){
