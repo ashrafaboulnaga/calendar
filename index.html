@@ -60,7 +60,7 @@
 	</header>
 	<div role="main">
 		<div class="container" ng-hide="loggedin">
-			<p class="big-title">You are not logged in</p>
+			<p class="big-title">Please click<a href="#" ng-hide="loggedin" ng-click="openAuth()" class="">&nbsp;<i class="fa fa-sign-in fa-lg"></i></a>&nbsp;to login</p>
 		</div>
 	    <div class="container" ng-show="loggedin">
 	        <section id="directives-calendar">
