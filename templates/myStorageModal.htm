@@ -12,7 +12,7 @@
    			<select class="form-control" ng-disabled="storageExists" ng-model="mystorage.workspace" ng-options="ws for ws in userProfile.workspaces"></select>&nbsp;/
    			<input type="text" class="bold_placeholder" ng-disabled="storageExists" ng-model="mystorage.storagename" ng-focus="isFocused" type="text" placeholder="mystorage.storagename">
 		</p>
-		<button type="button" class="btn btn-success" ng-disabled="storageExists" ng-click="newStorage(mystorage)">Save</button>
+		<button type="button" class="btn btn-success" ng-disabled="storageExists" ng-click="checkStorage(mystorage)">Save</button>
 		<p class="noteTitle" id="note-Title">{{noteTitle}}</p>
 	</form>
 	</div>

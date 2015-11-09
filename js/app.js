@@ -304,6 +304,10 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
     	$scope.createOrUpdateMetadata(uri, CREATE, storage);
     	$scope.closeMyStorage();
     };
+    
+    $scope.checkStorage = function(mystorage) {
+    	$scope.isContainerExisting(mystorage);
+    };
 
     // Gets workspaces
     $scope.getWorkspaces = function (uri) {
@@ -656,6 +660,33 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
     	    	  notify('Failed '+status, data);
     	      }
     	});
+    };
+    
+    // Checks if a container exists
+    $scope.isContainerExisting = function (mystorage) {
+    	var uri = mystorage.workspace + mystorage.storagename + "/";
+    	$http({
+          method: 'HEAD',
+          url: uri,
+          withCredentials: true
+        }).
+        success(function(data, status, headers) {
+        	//container found, warn user to create a different one
+        	$scope.noteTitle = "Warning: name already existing in the selected workspace!";
+    		$scope.$digest();
+        }).
+        error(function(data, status) {
+          if (status == 401) {
+            notify('Forbidden', 'Authentication required to create a directory for: '+$scope.user);
+          } else if (status == 403) {
+        	  notify('Forbidden', 'You are not allowed to access storage for: '+$scope.user);
+          } else if (status == 404) {
+        	  //container not existing, proceed
+        	  $scope.newStorage(mystorage);
+          } else {
+        	  notify('Failed - HTTP '+status, data, 5000);
+          }
+        });
     };
     
     // Composes an event as RDF resource
