@@ -357,7 +357,13 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
 				for (var e in evs) {
 					var storage = g.anyStatementMatching(evs[e]['subject'], SPACE('storage'))['object']['value'];
 					var prfs = g.anyStatementMatching(evs[e]['subject'], SPACE('preferencesFile'))['object']['value'];
-					var fullname = g.anyStatementMatching(evs[e]['subject'], FOAF('name'))['object']['value'];
+					
+					var fullnamePredicate = g.anyStatementMatching(evs[e]['subject'], FOAF('name'));
+					var fullname = "";
+					if(fullnamePredicate != null)
+						fullname = fullnamePredicate ['object']['value'];
+					else
+						fullname = $scope.userProfile.webid;
 					
 					var imagePredicate = g.anyStatementMatching(evs[e]['subject'], FOAF('img'));
 					var image = "";
