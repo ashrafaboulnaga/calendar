@@ -523,7 +523,7 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
 	    	var RDF = $rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
 		    var TITLE = $rdf.Namespace('http://purl.org/dc/elements/1.1/');
 			var TIMELINE = $rdf.Namespace('http://purl.org/NET/c4dm/timeline.owl#');
-			var EVENT = $rdf.Namespace('https://example.com/scheduler#');
+			var EVENT = $rdf.Namespace('https://meccano.io/scheduler#');
 			var LDP = $rdf.Namespace('http://www.w3.org/ns/ldp#');
 			var STAT = $rdf.Namespace('http://www.w3.org/ns/posix/stat#');
 			
@@ -558,7 +558,7 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
 	    	var RDF = $rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
 		    var TITLE = $rdf.Namespace('http://purl.org/dc/elements/1.1/');
 			var TIMELINE = $rdf.Namespace('http://purl.org/NET/c4dm/timeline.owl#');
-			var EVENT = $rdf.Namespace('https://example.com/scheduler#');
+			var EVENT = $rdf.Namespace('https://meccano.io/scheduler#');
 			var MAKER = $rdf.Namespace('http://xmlns.com/foaf/0.1/');
 			
 			var evs = g.statementsMatching(undefined, RDF('type'), EVENT('schedulerEvent'));
