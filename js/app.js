@@ -27,6 +27,7 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
 	$scope.sevents = [];
 	$scope.loggedin = false;
 	$scope.storageExists = false;
+	$scope.show_attempt_event = false;
     $scope.userProfile = {};
     $scope.newevent = {};
     $scope.metadata = "app-calendar";
@@ -308,6 +309,18 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
     $scope.checkStorage = function(mystorage) {
     	$scope.isContainerExisting(mystorage);
     };
+    
+    $scope.toggleAttemptEvent = function() {
+    	if($scope.show_attempt_event) {
+    		$scope.eventSources.push($scope.proposed_scheduler_events);
+    	} else {
+    		for(i=0; i<$scope.eventSources.length; i++){
+    		    if($scope.eventSources[i].name == 'proposed'){
+    		    	$scope.eventSources.splice(i, 1);
+    		    }
+    		}
+    	}
+    };
 
     // Gets workspaces
     $scope.getWorkspaces = function (uri) {
@@ -422,13 +435,43 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
                 }
 			}
 			//fetch user events
-			$scope.loadEvent($scope.userProfile.calendarStorage);
-			$scope.loadSchedules($scope.userProfile.calendarStorage);
+			$scope.loadCalendarEvents($scope.userProfile.calendarStorage);
+	    });
+    };
+    
+    // Gets calendar storage
+    $scope.getSchedulerStorage = function () {
+    	var uri = $scope.userProfile.preferencesDir;
+		var g = $rdf.graph();
+	    var f = $rdf.fetcher(g);
+	    
+	    f.nowOrWhenFetched(uri + '*',undefined,function(){	
+		    var TITLE = $rdf.Namespace('http://purl.org/dc/elements/1.1/');
+			var RDF = $rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+			var APP = $rdf.Namespace('https://example.com/');
+			var SPACE = $rdf.Namespace('http://www.w3.org/ns/pim/space#');
+	
+			var evs = g.statementsMatching(undefined, RDF('type'), APP('application'));
+			if (evs != undefined) {
+				for (var e in evs) {
+					var title = g.anyStatementMatching(evs[e]['subject'], TITLE('title'))['object']['value'];
+					if(title == "Scheduler") {
+						var storage = g.anyStatementMatching(evs[e]['subject'], SPACE('storage'))['object']['value'];
+											
+						$scope.userProfile.schedulerStorage = storage;
+						$scope.saveCredentials();
+						//$scope.storageExists = true;
+	                    $scope.$apply();
+					}
+                }
+			}
+			//fetch user events
+			$scope.loadSchedulerContainers($scope.userProfile.schedulerStorage);
 	    });
     };
     
     // Lists events resources
-    $scope.loadEvent = function (uri) {
+    $scope.loadCalendarEvents = function (uri) {
 		var g = $rdf.graph();
 		var f = $rdf.fetcher(g);
 	    f.nowOrWhenFetched(uri + '*',undefined,function() {
@@ -471,7 +514,85 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
 	    });  
     };
     
- // Lists schedulable events resources
+    // Lists containers resources
+    $scope.loadSchedulerContainers = function (uri) {
+		var containers = [];
+    	var g = $rdf.graph();
+		var f = $rdf.fetcher(g);
+	    f.nowOrWhenFetched(uri ,undefined,function() {
+	    	var RDF = $rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+		    var TITLE = $rdf.Namespace('http://purl.org/dc/elements/1.1/');
+			var TIMELINE = $rdf.Namespace('http://purl.org/NET/c4dm/timeline.owl#');
+			var EVENT = $rdf.Namespace('https://example.com/scheduler#');
+			var LDP = $rdf.Namespace('http://www.w3.org/ns/ldp#');
+			var STAT = $rdf.Namespace('http://www.w3.org/ns/posix/stat#');
+			
+			var evs = g.statementsMatching(undefined, RDF('type'), LDP('Container'));
+			if (evs != undefined) {
+				for (var e in evs) {
+					var contains = g.statementsMatching(evs[e]['subject'], LDP('contains'));
+					for (var c in contains) {
+						var container = contains[c]['object']['value'];
+						containers.push(container);
+						$scope.$apply();
+					}															
+                }
+			}
+			
+			$scope.loopSchedulerContainers(containers);
+	    });
+    };
+    
+    // Loops containers 
+    $scope.loopSchedulerContainers = function (containers) {
+    	for (var i in containers) {
+    		$scope.loadSchedulerEvents(containers[i]);
+    	}
+    };
+    
+    // Lists events resources
+    $scope.loadSchedulerEvents = function (uri) {
+		var g = $rdf.graph();
+		var f = $rdf.fetcher(g);
+	    f.nowOrWhenFetched(uri + '*',undefined,function() {
+	    	var RDF = $rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+		    var TITLE = $rdf.Namespace('http://purl.org/dc/elements/1.1/');
+			var TIMELINE = $rdf.Namespace('http://purl.org/NET/c4dm/timeline.owl#');
+			var EVENT = $rdf.Namespace('https://example.com/scheduler#');
+			var MAKER = $rdf.Namespace('http://xmlns.com/foaf/0.1/');
+			
+			var evs = g.statementsMatching(undefined, RDF('type'), EVENT('schedulerEvent'));
+			if (evs != undefined) {
+				for (var e in evs) {
+					var id = evs[e]['subject']['value']; 
+					var sId = id.split("_");
+					
+					var title = g.anyStatementMatching(evs[e]['subject'], EVENT('title'))['object']['value'];
+					
+					var organizer = g.anyStatementMatching(evs[e]['subject'], EVENT('organizer'))['object']['value'];
+					
+					var proposed = g.statementsMatching(evs[e]['subject'], EVENT('proposed'));
+					var dates = [];
+					for (var p in proposed) {
+						var prop = proposed[p]['object']['value'];
+						var date = new Date(prop);
+						date = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours());
+						var s_event = {
+							    id: sId[sId.length-1],
+							    title: title,
+							    start: date,
+							    end: date,
+							    webid: organizer
+							}
+						$scope.proposed_scheduler_events.events.push(s_event);
+						$scope.$apply();
+					}										
+                }
+			}
+	    });  
+    };
+    
+    // Lists schedulable events resources
     $scope.loadSchedules = function (uri) {
 		var g = $rdf.graph();
 		var f = $rdf.fetcher(g);
@@ -523,7 +644,8 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
         }).
         success(function(data, status, headers) {
         	//container found, load metadata
-        	$scope.getStorage(uri);       
+        	$scope.getStorage(uri);
+        	$scope.getSchedulerStorage();
         }).
         error(function(data, status) {
           if (status == 401) {
@@ -754,9 +876,23 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
       callback(events);
     };
 
-    $scope.sEvents = {
-       color: '#f00',
-       textColor: 'yellow',
+    $scope.proposed_scheduler_events = {
+       name: 'proposed',
+       color: '#f5f5f5',
+       textColor: '#4771A5',
+       borderColor: '#4771A5',
+       events: [
+          //{type:'party',title: 'Lunch',start: new Date(y, m, d, 12, 0),end: new Date(y, m, d, 14, 0),allDay: false},
+          //{type:'party',title: 'Lunch 2',start: new Date(y, m, d, 12, 0),end: new Date(y, m, d, 14, 0),allDay: false},
+          //{type:'party',title: 'Click for Google',start: new Date(y, m, 28),end: new Date(y, m, 29),url: 'http://google.com/'}
+        ]
+    };
+    
+    $scope.completed_scheduler_events = {
+       name: 'completed',
+       color: '#4771A5',
+       textColor: '#ffffff',
+       borderColor: '#29568F',
        events: [
           //{type:'party',title: 'Lunch',start: new Date(y, m, d, 12, 0),end: new Date(y, m, d, 14, 0),allDay: false},
           //{type:'party',title: 'Lunch 2',start: new Date(y, m, d, 12, 0),end: new Date(y, m, d, 14, 0),allDay: false},
@@ -836,7 +972,7 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
     };
    
     /* event sources array*/
-    $scope.eventSources = [$scope.events, $scope.eventsF, $scope.sEvents];
+    $scope.eventSources = [$scope.events, $scope.eventsF, $scope.completed_scheduler_events];
     //$scope.eventSources2 = [$scope.sEvents, $scope.eventsF, $scope.events, $scope.sevents];
     
     //Builds a customized timestamp date
