@@ -227,7 +227,7 @@ body {
   font-size: 14px;
   line-height: 20px;
   color: #333333;
-  background-color: #ffffff;
+  background-color: #f5f5f5;
 }
 
 a {
@@ -1447,7 +1447,7 @@ input[readonly],
 select[readonly],
 textarea[readonly] {
   cursor: not-allowed;
-  background-color: #eeeeee;
+  background-color: #ffffff;
 }
 
 input[type="radio"][disabled],
@@ -4408,7 +4408,7 @@ input[type="submit"].btn.btn-mini {
   padding-right: 20px;
   padding-left: 20px;
   background-color: #d9edf7;
-  border: 1px solid #bce8f1;
+  border: 2px solid #bce8f1;
   color: #3a87ad;
 }
 
@@ -5255,6 +5255,10 @@ input[type="submit"].btn.btn-mini {
 .modal-header {
   padding: 9px 15px;
   border-bottom: 1px solid #eee;
+  background-color: #d9edf7;
+  color: #3a87ad;
+  border: 1px solid #bce8f1;
+  border-radius: 4px 4px 0px 0px;
 }
 
 .modal-header .close {
@@ -5271,6 +5275,7 @@ input[type="submit"].btn.btn-mini {
   max-height: 400px;
   padding: 15px;
   overflow-y: auto;
+  background-color: #f5f5f5;
 }
 
 .modal-body1 {
