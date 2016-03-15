@@ -312,10 +312,10 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
     
     $scope.toggleAttemptEvent = function() {
     	if($scope.show_attempt_event) {
-    		$scope.eventSources.push($scope.proposed_scheduler_events);
+    		$scope.eventSources.push($scope.tentatives_scheduler_events);
     	} else {
     		for(i=0; i<$scope.eventSources.length; i++){
-    		    if($scope.eventSources[i].name == 'proposed'){
+    		    if($scope.eventSources[i].name == 'tentatives'){
     		    	$scope.eventSources.splice(i, 1);
     		    }
     		}
@@ -552,7 +552,8 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
     
     // Lists events resources
     $scope.loadSchedulerEvents = function (uri) {
-		var g = $rdf.graph();
+		var title = uri.split("/");
+    	var g = $rdf.graph();
 		var f = $rdf.fetcher(g);
 	    f.nowOrWhenFetched(uri + '*',undefined,function() {
 	    	var RDF = $rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
@@ -561,32 +562,34 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
 			var EVENT = $rdf.Namespace('https://meccano.io/scheduler#');
 			var MAKER = $rdf.Namespace('http://xmlns.com/foaf/0.1/');
 			
-			var evs = g.statementsMatching(undefined, RDF('type'), EVENT('schedulerEvent'));
+			var evs = g.statementsMatching(undefined, RDF('type'), EVENT('schedulerResponse'));
 			if (evs != undefined) {
 				for (var e in evs) {
-					var id = evs[e]['subject']['value']; 
+					var id = evs[e]['subject']['value'];
 					var sId = id.split("_");
 					
-					var title = g.anyStatementMatching(evs[e]['subject'], EVENT('title'))['object']['value'];
+					var partecipant = g.anyStatementMatching(evs[e]['subject'], EVENT('partecipant'))['object']['value'];
 					
-					var organizer = g.anyStatementMatching(evs[e]['subject'], EVENT('organizer'))['object']['value'];
-					
-					var proposed = g.statementsMatching(evs[e]['subject'], EVENT('proposed'));
-					var dates = [];
-					for (var p in proposed) {
-						var prop = proposed[p]['object']['value'];
-						var date = new Date(prop);
-						date = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours());
-						var s_event = {
-							    id: sId[sId.length-1],
-							    title: title,
-							    start: date,
-							    end: date,
-							    webid: organizer
+					if(partecipant == $scope.userProfile.webid) {
+						title = title[title.length-2];
+						
+						var confirmed = g.statementsMatching(evs[e]['subject'], EVENT('confirmed'));
+						var dates = [];
+						for (var p in confirmed) {
+							var prop = confirmed[p]['object']['value'];
+							var date = new Date(prop);
+							date = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours());
+							var s_event = {
+								    id: sId[sId.length-1],
+								    title: title,
+								    start: date,
+								    end: date,
 							}
-						$scope.proposed_scheduler_events.events.push(s_event);
-						$scope.$apply();
-					}										
+							
+							$scope.tentatives_scheduler_events.events.push(s_event);
+							$scope.$apply();
+						}
+					}
                 }
 			}
 	    });  
@@ -876,8 +879,8 @@ calendarDemoApp.controller('CalendarCtrl', function($scope, $compile, $timeout, 
       callback(events);
     };
 
-    $scope.proposed_scheduler_events = {
-       name: 'proposed',
+    $scope.tentatives_scheduler_events = {
+       name: 'tentatives',
        color: '#f5f5f5',
        textColor: '#4771A5',
        borderColor: '#4771A5',
