@@ -210,3 +210,11 @@ p.big-title {
 .attempt_checkbox {
 	vertical-align: top;
 }
+.footer {
+	margin-top: 50px;
+	text-align: center;
+	font-size: 12px;
+}
+.blue {
+	color: #3a87ad;
+}
